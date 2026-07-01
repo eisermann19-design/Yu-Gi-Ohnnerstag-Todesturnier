@@ -61,27 +61,15 @@
             animation: floating 4s ease-in-out infinite;
         }
 
-        @keyframes floating {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
+        @keyframes floating { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         
         .panel-cell, .login-box, .dashboard-ticker {
-            background: var(--panel-color);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-            padding: 25px;
+            background: var(--panel-color); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4); padding: 25px;
         }
 
         .login-box { max-width: 450px; margin: 80px auto; text-align: center; border-top: 2px solid var(--accent-color); }
-        .login-box input { 
-            width: 100%; padding: 14px; margin: 12px 0; 
-            background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); 
-            color: #fff; border-radius: 8px; font-size: 16px;
-        }
+        .login-box input { width: 100%; padding: 14px; margin: 12px 0; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; border-radius: 8px; font-size: 16px; }
         .login-box input:focus { border-color: var(--accent-color); outline: none; box-shadow: 0 0 10px rgba(157, 78, 221, 0.3); }
 
         .app-grid { display: none; animation: fadeIn 0.6s ease; }
@@ -89,36 +77,24 @@
 
         .panel-table { display: table; width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 20px 0; }
         .panel-cell { display: table-cell; vertical-align: top; }
-        
-        @media (max-width: 992px) {
-            .panel-table, .panel-cell { display: block; width: 100%; }
-            .panel-cell { margin-bottom: 20px; }
-        }
+        @media (max-width: 992px) { .panel-table, .panel-cell { display: block; width: 100%; } .panel-cell { margin-bottom: 20px; } }
 
         .dashboard-ticker { border-left: 4px solid var(--accent-color); margin-bottom: 25px; background: rgba(157, 78, 221, 0.03); }
         .dashboard-ticker h3 { text-align: left; margin: 0 0 12px 0; font-size: 16px; letter-spacing: 1px; color: #fff; }
-        .ticker-list { max-height: 120px; overflow-y: auto; font-size: 14px; list-style: none; padding: 0; margin: 0; }
+        .ticker-list { max-height: 180px; overflow-y: auto; font-size: 14px; list-style: none; padding: 0; margin: 0; scroll-behavior: smooth; }
         .ticker-list li { padding: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); animation: slideIn 0.3s ease; }
         @keyframes slideIn { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        .deckname-input-field { 
-            width: 100%; padding: 14px; background: rgba(0, 0, 0, 0.3); 
-            border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; border-radius: 10px; 
-            font-size: 20px; font-weight: bold; text-align: center; margin-bottom: 20px; letter-spacing: 1px;
-        }
+        .deckname-input-field { width: 100%; padding: 14px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; border-radius: 10px; font-size: 20px; font-weight: bold; text-align: center; margin-bottom: 20px; letter-spacing: 1px; }
         .deckname-input-field:focus { border-color: var(--accent-color); outline: none; }
         .deckname-input-field:disabled { background: transparent; border-color: transparent; color: var(--ready-color); }
 
-        input[type="text"]#search-input { 
-            width: 100%; padding: 14px; background-color: rgba(0, 0, 0, 0.4); 
-            border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; border-radius: 10px; font-size: 16px; 
-        }
+        input[type="text"]#search-input { width: 100%; padding: 14px; background-color: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; border-radius: 10px; font-size: 16px; }
         input[type="text"]#search-input:focus { border-color: var(--accent-color); outline: none; box-shadow: 0 0 12px rgba(157, 78, 221, 0.2); }
 
         .search-results { max-height: 480px; overflow-y: auto; margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 5px; }
         .search-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); border-radius: 6px; }
         .search-item:hover { background-color: rgba(255,255,255,0.03); transform: scale(1.01); }
-        
         .card-info-trigger { cursor: pointer; font-weight: 600; }
         .card-info-trigger:hover { text-shadow: 0 0 8px rgba(255,255,255,0.4); }
 
@@ -138,31 +114,17 @@
         .type-pendel-synchro { background: linear-gradient(90deg, var(--color-synchro) 40%, var(--color-spell) 60%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold; }
         .type-pendel-xyz { background: linear-gradient(90deg, #fff 40%, var(--color-spell) 60%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold; }
 
-        .btn { 
-            background: linear-gradient(135deg, var(--accent-color), #5a189a); 
-            color: white; border: none; padding: 8px 14px; margin-left: 4px; border-radius: 6px; 
-            cursor: pointer; font-weight: bold; font-size: 12px; letter-spacing: 0.5px;
-            box-shadow: 0 4px 12px rgba(157, 78, 221, 0.2);
-        }
+        .btn { background: linear-gradient(135deg, var(--accent-color), #5a189a); color: white; border: none; padding: 8px 14px; margin-left: 4px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(157, 78, 221, 0.2); }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(157, 78, 221, 0.4); opacity: 0.95; }
         .btn-minus { background: rgba(255, 255, 255, 0.1); color: #fff; box-shadow: none; }
         .btn-minus:hover { background: rgba(255, 255, 255, 0.2); }
         .btn-protect { background: linear-gradient(135deg, var(--protected-color), #d48c00); color: #000; }
         .btn-ban { background: linear-gradient(135deg, var(--banned-color), #bd003c); }
         
-        .btn-ready { 
-            background: linear-gradient(135deg, var(--ready-color), #00bbf9); color: #0a0a0f; 
-            width: 100%; padding: 16px; font-size: 15px; margin-bottom: 20px; border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 245, 212, 0.2); letter-spacing: 1px;
-        }
+        .btn-ready { background: linear-gradient(135deg, var(--ready-color), #00bbf9); color: #0a0a0f; width: 100%; padding: 16px; font-size: 15px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 245, 212, 0.2); letter-spacing: 1px; }
         .btn-ready.is-disabled { background: #29293d; color: #5c5c7a; cursor: not-allowed; transform: none; box-shadow: none; }
         
-        .btn-danger-leave {
-            background: linear-gradient(135deg, #ff0055, #9a0026);
-            color: #fff; width: 100%; padding: 10px; font-size: 13px; margin-top: 25px; border-radius: 8px;
-            border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;
-            box-shadow: 0 4px 12px rgba(255, 0, 85, 0.15);
-        }
+        .btn-danger-leave { background: linear-gradient(135deg, #ff0055, #9a0026); color: #fff; width: 100%; padding: 10px; font-size: 13px; margin-top: 25px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(255, 0, 85, 0.15); }
         .btn-danger-leave:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(255, 0, 85, 0.3); }
 
         .deck-counter { font-size: 14px; color: #a4a4b2; margin-bottom: 20px; text-align: center; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; line-height: 1.6; }
@@ -187,15 +149,9 @@
         .banned-by-label { display: block; font-size: 11px; color: var(--banned-color); font-weight: bold; margin-top: 3px; }
         .secret-card { font-style: italic; color: #5c5c7a; }
 
-        .modal { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(5, 5, 8, 0.85); backdrop-filter: blur(8px);
-            justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.4s ease;
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(5, 5, 8, 0.85); backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.4s ease; }
         .modal.show { opacity: 1; display: flex; }
-        .modal-content { 
-            background-color: #161621; border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 20px; max-width: 680px; width: 90%; display: flex; gap: 25px; position: relative;
-            transform: scale(0.85) translateY(20px); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
+        .modal-content { background-color: #161621; border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 20px; max-width: 680px; width: 90%; display: flex; gap: 25px; position: relative; transform: scale(0.85) translateY(20px); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .modal.show .modal-content { transform: scale(1) translateY(0); }
         .modal-img-container { width: 240px; flex-shrink: 0; }
         .modal-img { max-width: 100%; height: auto; border-radius: 10px; }
@@ -220,10 +176,8 @@
     <!-- 2. HAUPT-ANWENDUNG -->
     <div id="app-area" class="app-grid">
         <div class="dashboard-ticker">
-            <h3>🛡️ Live Turnier-Ticker (Bann-Übersicht)</h3>
-            <ul id="ticker-list" class="ticker-list">
-                <li>Noch keine Aktivität im Raum.</li>
-            </ul>
+            <h3>🛡️ Live Turnier-Ticker</h3>
+            <ul id="ticker-list" class="ticker-list"><li>Noch keine Aktivität im Raum.</li></ul>
         </div>
 
         <h3 style="text-align:left; margin-bottom:8px; font-size:16px;">Decks im Raum:</h3>
@@ -238,8 +192,7 @@
 
             <div class="panel-cell">
                 <button id="ready-toggle-btn" class="btn btn-ready" onclick="handlePhaseTransition()">Deck fertigstellen 🔒</button>
-                
-                <input type="text" id="deck-name-field" class="deckname-input-field" placeholder="Name deines Decks eingeben..." onchange="updateDeckNameLive()">
+                <input type="text" id="deck-name-field" class="deckname-input-field" placeholder="Name deines Decks eingeben..." oninput="updateDeckNameLive()">
                 
                 <div class="deck-counter">
                     <strong>Main:</strong> <span id="main-count">0</span>/60 | <strong>Extra:</strong> <span id="extra-count">0</span>/15 | <strong>Side:</strong> <span id="side-count">0</span>/15<br>
@@ -270,7 +223,6 @@
 </div>
 
 <script>
-    // !!! BOMBENSICHERE SYSTEM-KEYS !!!
     const SUPABASE_URL = "https://bvrolbghfmkrjnhugahk.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_zOIy-V9JZyfTm2Y_iuFyug_Ws6F7lzG";
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -280,6 +232,7 @@
     let alleDecks = []; 
     let currentSearchResults = [];
     let timeout = null;
+    let hasAlertedBannPhaseDone = false; 
 
     const searchInput = document.getElementById('search-input');
     const searchResults = document.getElementById('search-results');
@@ -310,6 +263,20 @@
     async function ladeAlleDecks() {
         const { data } = await db.from('decks').select('*');
         alleDecks = data || [];
+        
+        if (alleDecks.length > 1) {
+            const reqBanns = (alleDecks.length - 1) * 2;
+            const allDone = alleDecks.every(d => (d.karten_liste || []).filter(c => c.status === 'banned').length >= reqBanns);
+            const myDeck = getAusgewaehltesDeck();
+            
+            if (allDone && myDeck.status_phase === 'ready' && !hasAlertedBannPhaseDone) {
+                hasAlertedBannPhaseDone = true;
+                setTimeout(() => {
+                    alert("🚨 BANN-PHASE ABGESCHLOSSEN! 🚨\n\nAlle Spieler im Raum haben ihre Banns komplett verteilt. Du kannst deine Bann-Phase jetzt beenden und die gesperrten Karten austauschen.");
+                }, 500); 
+            }
+        }
+
         renderDashboardTicker();
         renderSpielerTabs();
         renderAktuellesDeck();
@@ -336,16 +303,30 @@
         return '';
     }
 
+    function getSortWeight(card) {
+        const t = card.type.toLowerCase();
+        if (card.deckType === 'extra') {
+            if(t.includes('fusion')) return 1;
+            if(t.includes('synchro')) return 2;
+            if(t.includes('xyz')) return 3;
+            if(t.includes('link')) return 4;
+            return 5;
+        } else {
+            if(t.includes('normal')) return 1;
+            if(t.includes('ritual')) return 3;
+            if(t.includes('spell')) return 4;
+            if(t.includes('trap')) return 5;
+            return 2; 
+        }
+    }
+
     function getGroupedDeck(kartenListe) {
         const grouped = {};
         if (!kartenListe) return [];
         kartenListe.forEach(card => {
             const key = `${card.id}_${card.deckType}_${card.status}_${card.bannedBy || 'none'}_${card.isNewErsatz ? 'e' : 'n'}`;
-            if(!grouped[key]) {
-                grouped[key] = { ...card, count: 0, instanceIds: [] };
-            }
-            grouped[key].count++;
-            grouped[key].instanceIds.push(card.instanceId);
+            if(!grouped[key]) { grouped[key] = { ...card, count: 0, instanceIds: [] }; }
+            grouped[key].count++; grouped[key].instanceIds.push(card.instanceId);
         });
         return Object.values(grouped);
     }
@@ -356,21 +337,41 @@
         location.reload();
     }
 
+    // --- NEU: LOGISCHE TIMELINE IM TICKER ---
     function renderDashboardTicker() {
-        const ticker = document.getElementById('ticker-list');
-        ticker.innerHTML = ""; let hatEintraege = false;
+        const ticker = document.getElementById('ticker-list'); 
+        ticker.innerHTML = ""; 
+        let entries = [];
+
+        alleDecks.forEach(d => { entries.push(`<li>🟢 <strong>${d.spieler_name}</strong> baut ein Deck.</li>`); });
+
+        alleDecks.forEach(d => {
+            if (['ready', 'umbau', 'ready_final'].includes(d.status_phase)) {
+                entries.push(`<li>🔓 <strong>${d.spieler_name}</strong> hat das Deck für Banns freigegeben!</li>`);
+            }
+        });
+
         alleDecks.forEach(d => {
             const listSource = (d.status_phase === 'umbau' || d.status_phase === 'ready_final') ? d.original_liste : d.karten_liste;
             if (listSource) {
-                const banns = listSource.filter(c => c.status === 'banned');
-                banns.forEach(b => {
-                    hatEintraege = true; const li = document.createElement('li');
-                    li.innerHTML = `❌ <strong>${b.bannedBy}</strong> hat die Karte <strong>"${b.name}"</strong> im Deck von <strong>${d.spieler_name}</strong> gebannt!`;
-                    ticker.appendChild(li);
+                listSource.filter(c => c.status === 'banned').forEach(b => {
+                    entries.push(`<li>❌ <strong>${b.bannedBy}</strong> bannt <strong>"${b.name}"</strong> bei <strong>${d.spieler_name}</strong>!</li>`);
                 });
             }
         });
-        if(!hatEintraege) ticker.innerHTML = "<li>Noch keine Aktivität. Phase 1 läuft...</li>";
+
+        alleDecks.forEach(d => {
+            if (d.status_phase === 'ready_final') {
+                entries.push(`<li>⚔️ <strong>${d.spieler_name}</strong> ist umgebaut und TURNIERBEREIT!</li>`);
+            }
+        });
+
+        if(entries.length === 0) {
+            ticker.innerHTML = "<li>Noch keine Aktivität. Phase 1 läuft...</li>";
+        } else {
+            ticker.innerHTML = entries.join('');
+            ticker.scrollTop = ticker.scrollHeight; // Auto-Scroll ans Ende
+        }
     }
 
     function renderSpielerTabs() {
@@ -381,10 +382,7 @@
             const tab = document.createElement('div');
             tab.className = `player-tab ${d.spieler_name === ausgewaehlterSpieler ? 'active' : ''}`;
             let icon = '🟡';
-            if(d.status_phase === 'schutz') icon = '🔵';
-            if(d.status_phase === 'ready') icon = '🔴';
-            if(d.status_phase === 'umbau') icon = '🟠';
-            if(d.status_phase === 'ready_final') icon = '🟢';
+            if(d.status_phase === 'schutz') icon = '🔵'; if(d.status_phase === 'ready') icon = '🔴'; if(d.status_phase === 'umbau') icon = '🟠'; if(d.status_phase === 'ready_final') icon = '🟢';
             tab.innerText = `${d.spieler_name} ${icon}`;
             tab.onclick = () => { ausgewaehlterSpieler = d.spieler_name; renderSpielerTabs(); renderAktuellesDeck(); };
             container.appendChild(tab);
@@ -396,38 +394,46 @@
 
     async function handlePhaseTransition() {
         if(ausgewaehlterSpieler !== aktuellerSpieler) return;
-        const meinD = getAusgewaehltesDeck();
-        const karten = meinD.karten_liste || [];
+        const meinD = getAusgewaehltesDeck(); const karten = meinD.karten_liste || [];
 
         if(meinD.status_phase === 'bau') {
             if(karten.filter(c => c.deckType === 'main').length < 40) return alert("Mindestens 40 Main-Karten nötig!");
             if(confirm("Deckbau fertig? Weiter zur Schutz-Auswahl.")) { meinD.status_phase = 'schutz'; await updateDeckData(meinD); }
-        } 
-        else if(meinD.status_phase === 'schutz') {
+        } else if(meinD.status_phase === 'schutz') {
             const prot = karten.filter(c => c.status === 'protected').length;
             if(prot < 3 && karten.length >= 3 && !confirm(`Erst ${prot}/3 geschützt. Trotzdem fortfahren?`)) return;
             if(confirm("Schutz fertig? Deck für gegnerische Banns freigeben.")) { meinD.status_phase = 'ready'; meinD.original_liste = karten; await updateDeckData(meinD); }
-        }
-        else if(meinD.status_phase === 'ready') {
+        } else if(meinD.status_phase === 'ready') {
             const targetBanns = (alleDecks.length - 1) * 2;
-            if(karten.filter(c => c.status === 'banned').length < targetBanns) return alert(`Warte auf alle Banns! Es fehlen noch welche (${karten.filter(c => c.status === 'banned').length}/${targetBanns}).`);
+            if(karten.filter(c => c.status === 'banned').length < targetBanns) return alert(`Warte auf alle Banns! Es fehlen noch welche.`);
             if(confirm("Bann-Phase beenden und in die geheime Anpassung wechseln?")) { meinD.status_phase = 'umbau'; meinD.original_liste = JSON.parse(JSON.stringify(karten)); await updateDeckData(meinD); }
-        }
-        else if(meinD.status_phase === 'umbau') {
+        } else if(meinD.status_phase === 'umbau') {
             if(karten.some(c => c.status === 'banned')) return alert("Bitte entferne zuerst alle rot umrandeten Karten!");
+            
+            const origMain = (meinD.original_liste || []).filter(c => c.deckType === 'main').length;
+            const curMain = karten.filter(c => c.deckType === 'main').length;
+            if (origMain !== curMain) return alert(`Main Deck: Bitte fülle die leeren Plätze auf! Du hast Karten entfernt, aber nicht genug ersetzt. (${curMain}/${origMain})`);
+
+            const origExtra = (meinD.original_liste || []).filter(c => c.deckType === 'extra').length;
+            const curExtra = karten.filter(c => c.deckType === 'extra').length;
+            if (origExtra !== curExtra) return alert(`Extra Deck: Bitte fülle die leeren Plätze auf! (${curExtra}/${origExtra})`);
+
+            const origSide = (meinD.original_liste || []).filter(c => c.deckType === 'side').length;
+            const curSide = karten.filter(c => c.deckType === 'side').length;
+            if (origSide !== curSide) return alert(`Side Deck: Bitte fülle die leeren Plätze auf! (${curSide}/${origSide})`);
+
             if(confirm("Überarbeitung fertig? Als 'Turnierbereit' markieren.")) { meinD.status_phase = 'ready_final'; await updateDeckData(meinD); }
         }
     }
 
-    async function updateDeckData(deckObj) {
-        await db.from('decks').update({ karten_liste: deckObj.karten_liste, original_liste: deckObj.original_liste, status_phase: deckObj.status_phase, deck_name: deckObj.deck_name }).eq('spieler_name', aktuellerSpieler);
-    }
+    async function updateDeckData(deckObj) { await db.from('decks').update({ karten_liste: deckObj.karten_liste, original_liste: deckObj.original_liste, status_phase: deckObj.status_phase, deck_name: deckObj.deck_name }).eq('spieler_name', aktuellerSpieler); }
 
     function renderAktuellesDeck() {
         mainDeckList.innerHTML = ''; extraDeckList.innerHTML = ''; sideDeckList.innerHTML = '';
         const dObj = getAusgewaehltesDeck(); const amITheOwner = (aktuellerSpieler === ausgewaehlterSpieler);
         
-        deckNameField.value = dObj.deck_name || ""; deckNameField.disabled = !amITheOwner || (dObj.status_phase !== 'bau' && dObj.status_phase !== 'umbau');
+        if (document.activeElement !== deckNameField) { deckNameField.value = dObj.deck_name || ""; }
+        deckNameField.disabled = !amITheOwner || (dObj.status_phase !== 'bau' && dObj.status_phase !== 'umbau');
         document.getElementById('leave-tournament-btn').style.display = amITheOwner ? "block" : "none";
 
         let sourceList = [...(dObj.karten_liste || [])];
@@ -457,15 +463,28 @@
         let mc = 0, ec = 0, sc = 0, pc = 0, bc = 0;
         const aggregated = getGroupedDeck(sourceList);
 
+        aggregated.sort((a, b) => {
+            const weightDiff = getSortWeight(a) - getSortWeight(b);
+            if (weightDiff !== 0) return weightDiff;
+            return a.name.localeCompare(b.name);
+        });
+
         aggregated.forEach(card => {
             if (card.deckType === 'main') mc += card.count; else if (card.deckType === 'extra') ec += card.count; else if (card.deckType === 'side') sc += card.count;
             if (card.status === 'protected') pc += card.count; if (card.status === 'banned') bc += card.count;
 
             const li = document.createElement('li'); li.className = `deck-item ${card.status}`;
-            let banLabel = card.status === 'banned' ? `<span class="banned-by-label">❌ Gebannt von: ${bannedByText(card)}</span>` : '';
+            let banLabel = card.status === 'banned' ? `<span class="banned-by-label">❌ Gebannt von: ${card.bannedBy || 'Unbekannt'}</span>` : '';
+            
             let showProtect = amITheOwner && dObj.status_phase === 'schutz';
             let showBan = !amITheOwner && dObj.status_phase === 'ready' && card.status !== 'protected';
-            let showMinus = (amITheOwner && dObj.status_phase === 'bau') || (amITheOwner && dObj.status_phase === 'umbau');
+            
+            let showMinus = false;
+            if (amITheOwner) {
+                if (dObj.status_phase === 'bau') showMinus = true;
+                if (dObj.status_phase === 'umbau' && (card.status === 'banned' || card.isNewErsatz)) showMinus = true;
+            }
+            
             let lastId = card.instanceIds[card.instanceIds.length - 1];
 
             if(!amITheOwner && card.isNewErsatz) {
@@ -492,50 +511,50 @@
         document.getElementById('protected-count').innerText = pc; document.getElementById('banned-count').innerText = bc;
     }
 
-    function bannedByText(card) {
-        return card.bannedBy || 'Unbekannt';
-    }
-
     async function addCardToSlot(cardId, slot) {
         if(ausgewaehlterSpieler !== aktuellerSpieler) return; 
-        
-        // Frischesten Zustand aus dem lokalen Speicher laden
         const meinD = getAusgewaehltesDeck();
         if(meinD.status_phase !== 'bau' && meinD.status_phase !== 'umbau') return;
         
-        const cardData = currentSearchResults.find(c => c.id == cardId); 
-        if (!cardData) return;
-        
-        // Sicherstellen, dass die Liste existiert und als echtes Array manipuliert wird
+        const cardData = currentSearchResults.find(c => c.id == cardId); if (!cardData) return;
         if (!meinD.karten_liste) meinD.karten_liste = [];
         let deck = [...meinD.karten_liste];
         
         if (deck.filter(c => c.id == cardId).length >= 3) return alert("Max. 3 Kopien!");
         
-        deck.push({ 
-            id: cardData.id, name: cardData.name, type: cardData.type, atk: cardData.atk, def: cardData.def, level: cardData.level, race: cardData.race, desc: cardData.desc, card_images: cardData.card_images, 
-            instanceId: Date.now() + Math.random(), status: 'normal', deckType: slot, bannedBy: null, isNewErsatz: (meinD.status_phase === 'umbau') 
-        });
+        if (meinD.status_phase === 'umbau') {
+            const origCount = (meinD.original_liste || []).filter(c => c.deckType === slot).length;
+            const curCount = deck.filter(c => c.deckType === slot).length;
+            if (curCount >= origCount) {
+                return alert(`Dein ${slot.toUpperCase()} Deck ist voll! Entferne zuerst eine gebannte Karte über den [-] Button, um Platz für Ersatz zu schaffen.`);
+            }
+        } else {
+            if (slot === 'main' && deck.filter(c => c.deckType === 'main').length >= 60) return alert("Main Deck voll (max. 60)!");
+            if (slot === 'extra' && deck.filter(c => c.deckType === 'extra').length >= 15) return alert("Extra Deck voll (max. 15)!");
+            if (slot === 'side' && deck.filter(c => c.deckType === 'side').length >= 15) return alert("Side Deck voll (max. 15)!");
+        }
         
-        meinD.karten_liste = deck;
-        await updateDeckData(meinD);
-        ladeAlleDecks(); // Sofortiger Cloud-Reload
+        deck.push({ id: cardData.id, name: cardData.name, type: cardData.type, atk: cardData.atk, def: cardData.def, level: cardData.level, race: cardData.race, desc: cardData.desc, card_images: cardData.card_images, instanceId: Date.now() + Math.random(), status: 'normal', deckType: slot, bannedBy: null, isNewErsatz: (meinD.status_phase === 'umbau') });
+        meinD.karten_liste = deck; await updateDeckData(meinD); ladeAlleDecks();
     }
 
     async function removeInstance(instanceId) { 
         if(ausgewaehlterSpieler !== aktuellerSpieler) return; 
         const meinD = getAusgewaehltesDeck(); 
+        
+        if (meinD.status_phase === 'umbau') {
+            const card = meinD.karten_liste.find(c => c.instanceId === instanceId);
+            if (card && card.status !== 'banned' && !card.isNewErsatz) {
+                return alert("In dieser Phase dürfen nur gebannte Karten oder neue Ersatzkarten entfernt werden!");
+            }
+        }
+
         meinD.karten_liste = meinD.karten_liste.filter(c => c.instanceId !== instanceId); 
-        await updateDeckData(meinD);
-        ladeAlleDecks();
+        await updateDeckData(meinD); ladeAlleDecks(); 
     }
 
     async function toggleStatus(instanceId, targetStatus) {
-        let dObj = getAusgewaehltesDeck(); 
-        let deck = [...(dObj.karten_liste || [])]; 
-        const card = deck.find(c => c.instanceId === instanceId); 
-        if (!card) return;
-        
+        let dObj = getAusgewaehltesDeck(); let deck = [...(dObj.karten_liste || [])]; const card = deck.find(c => c.instanceId === instanceId); if (!card) return;
         const amITheOwner = (aktuellerSpieler === ausgewaehlterSpieler);
         if (targetStatus === 'protected' && amITheOwner && dObj.status_phase === 'schutz') {
             if (deck.filter(c => c.status === 'protected').length >= 3 && card.status !== 'protected') return alert("Max 3 geschützt!");
@@ -543,19 +562,9 @@
         } 
         if (targetStatus === 'banned' && !amITheOwner && dObj.status_phase === 'ready' && card.status !== 'protected') {
             const myBans = deck.filter(c => c.status === 'banned' && c.bannedBy === aktuellerSpieler).length;
-            if (card.status === 'banned') { 
-                if(card.bannedBy !== aktuellerSpieler) return; 
-                card.status = 'normal'; card.bannedBy = null; 
-            } else { 
-                if (myBans >= 2) return alert("Max 2 Banns pro Gegner!"); 
-                card.status = 'banned'; card.bannedBy = aktuellerSpieler; 
-            }
+            if (card.status === 'banned') { if(card.bannedBy !== aktuellerSpieler) return; card.status = 'normal'; card.bannedBy = null; } else { if (myBans >= 2) return alert("Max 2 Banns pro Gegner!"); card.status = 'banned'; card.bannedBy = aktuellerSpieler; }
         }
-        
-        dObj.karten_liste = deck;
-        dObj.original_liste = deck;
-        await db.from('decks').update({ karten_liste: deck, original_liste: deck }).eq('spieler_name', ausgewaehlterSpieler);
-        ladeAlleDecks();
+        await db.from('decks').update({ karten_liste: deck, original_liste: deck }).eq('spieler_name', ausgewaehlterSpieler); ladeAlleDecks();
     }
 
     searchInput.addEventListener('input', () => { clearTimeout(timeout); const q = searchInput.value.trim(); if (q.length < 3) return; timeout = setTimeout(() => fetchCardsDualLanguage(q), 300); });
