@@ -157,7 +157,6 @@
         }
         .btn-ready.is-disabled { background: #29293d; color: #5c5c7a; cursor: not-allowed; transform: none; box-shadow: none; }
         
-        /* Delete Button */
         .btn-danger-leave {
             background: linear-gradient(135deg, #ff0055, #9a0026);
             color: #fff; width: 100%; padding: 10px; font-size: 13px; margin-top: 25px; border-radius: 8px;
@@ -252,7 +251,6 @@
                 <h3>Extra Deck</h3><ul id="extra-deck-list" class="deck-list"></ul>
                 <h3>Side Deck</h3><ul id="side-deck-list" class="deck-list"></ul>
 
-                <!-- NEUER DANGER BUTTON ZUM LÖSCHEN & VERLASSEN -->
                 <button id="leave-tournament-btn" class="btn-danger-leave" onclick="leaveTournament()">Deck löschen & Raum verlassen 🚨</button>
             </div>
         </div>
@@ -272,6 +270,7 @@
 </div>
 
 <script>
+    // !!! BOMBENSICHERE SYSTEM-KEYS !!!
     const SUPABASE_URL = "https://bvrolbghfmkrjnhugahk.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_zOIy-V9JZyfTm2Y_iuFyug_Ws6F7lzG";
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -339,8 +338,8 @@
 
     function getGroupedDeck(kartenListe) {
         const grouped = {};
+        if (!kartenListe) return [];
         kartenListe.forEach(card => {
-            // Eindeutige Zeilen-ID generieren aus ID, Slot, Status und wer gebannt hat
             const key = `${card.id}_${card.deckType}_${card.status}_${card.bannedBy || 'none'}_${card.isNewErsatz ? 'e' : 'n'}`;
             if(!grouped[key]) {
                 grouped[key] = { ...card, count: 0, instanceIds: [] };
@@ -351,20 +350,10 @@
         return Object.values(grouped);
     }
 
-    // DIE NEUE LÖSCH-LOGIK
     async function leaveTournament() {
-        if(!confirm("Möchtest du dein Deck wirklich UNWIDERRUFLICH löschen und den Raum verlassen? Ihre Gegner verlieren damit auch ihre Banns auf dich.")) return;
-        
+        if(!confirm("Möchtest du dein Deck wirklich UNWIDERRUFLICH löschen und den Raum verlassen?")) return;
         await db.from('decks').delete().eq('spieler_name', aktuellerSpieler);
-        
-        // App zurücksetzen und Login anzeigen
-        document.getElementById('app-area').style.display = 'none';
-        document.getElementById('login-area').style.display = 'block';
-        document.getElementById('player-name-input').value = "";
-        
-        myDeck = [];
-        alleDecks = [];
-        location.reload(); // Erzwingt sauberen Raum-Neustart
+        location.reload();
     }
 
     function renderDashboardTicker() {
@@ -372,12 +361,14 @@
         ticker.innerHTML = ""; let hatEintraege = false;
         alleDecks.forEach(d => {
             const listSource = (d.status_phase === 'umbau' || d.status_phase === 'ready_final') ? d.original_liste : d.karten_liste;
-            const banns = listSource.filter(c => c.status === 'banned');
-            banns.forEach(b => {
-                hatEintraege = true; const li = document.createElement('li');
-                li.innerHTML = `❌ <strong>${b.bannedBy}</strong> hat die Karte <strong>"${b.name}"</strong> im Deck von <strong>${d.spieler_name}</strong> gebannt!`;
-                ticker.appendChild(li);
-            });
+            if (listSource) {
+                const banns = listSource.filter(c => c.status === 'banned');
+                banns.forEach(b => {
+                    hatEintraege = true; const li = document.createElement('li');
+                    li.innerHTML = `❌ <strong>${b.bannedBy}</strong> hat die Karte <strong>"${b.name}"</strong> im Deck von <strong>${d.spieler_name}</strong> gebannt!`;
+                    ticker.appendChild(li);
+                });
+            }
         });
         if(!hatEintraege) ticker.innerHTML = "<li>Noch keine Aktivität. Phase 1 läuft...</li>";
     }
@@ -406,23 +397,24 @@
     async function handlePhaseTransition() {
         if(ausgewaehlterSpieler !== aktuellerSpieler) return;
         const meinD = getAusgewaehltesDeck();
+        const karten = meinD.karten_liste || [];
 
         if(meinD.status_phase === 'bau') {
-            if(meinD.karten_liste.filter(c => c.deckType === 'main').length < 40) return alert("Mindestens 40 Main-Karten nötig!");
+            if(karten.filter(c => c.deckType === 'main').length < 40) return alert("Mindestens 40 Main-Karten nötig!");
             if(confirm("Deckbau fertig? Weiter zur Schutz-Auswahl.")) { meinD.status_phase = 'schutz'; await updateDeckData(meinD); }
         } 
         else if(meinD.status_phase === 'schutz') {
-            const prot = meinD.karten_liste.filter(c => c.status === 'protected').length;
-            if(prot < 3 && meinD.karten_liste.length >= 3 && !confirm(`Erst ${prot}/3 geschützt. Trotzdem fortfahren?`)) return;
-            if(confirm("Schutz fertig? Deck für gegnerische Banns freigeben.")) { meinD.status_phase = 'ready'; meinD.original_liste = meinD.karten_liste; await updateDeckData(meinD); }
+            const prot = karten.filter(c => c.status === 'protected').length;
+            if(prot < 3 && karten.length >= 3 && !confirm(`Erst ${prot}/3 geschützt. Trotzdem fortfahren?`)) return;
+            if(confirm("Schutz fertig? Deck für gegnerische Banns freigeben.")) { meinD.status_phase = 'ready'; meinD.original_liste = karten; await updateDeckData(meinD); }
         }
         else if(meinD.status_phase === 'ready') {
             const targetBanns = (alleDecks.length - 1) * 2;
-            if(meinD.karten_liste.filter(c => c.status === 'banned').length < targetBanns) return alert(`Warte auf alle Banns! Es fehlen noch welche (${meinD.karten_liste.filter(c => c.status === 'banned').length}/${targetBanns}).`);
-            if(confirm("Bann-Phase beenden und in die geheime Anpassung wechseln?")) { meinD.status_phase = 'umbau'; meinD.original_liste = JSON.parse(JSON.stringify(meinD.karten_liste)); await updateDeckData(meinD); }
+            if(karten.filter(c => c.status === 'banned').length < targetBanns) return alert(`Warte auf alle Banns! Es fehlen noch welche (${karten.filter(c => c.status === 'banned').length}/${targetBanns}).`);
+            if(confirm("Bann-Phase beenden und in die geheime Anpassung wechseln?")) { meinD.status_phase = 'umbau'; meinD.original_liste = JSON.parse(JSON.stringify(karten)); await updateDeckData(meinD); }
         }
         else if(meinD.status_phase === 'umbau') {
-            if(meinD.karten_liste.some(c => c.status === 'banned')) return alert("Bitte entferne zuerst alle rot umrandeten Karten!");
+            if(karten.some(c => c.status === 'banned')) return alert("Bitte entferne zuerst alle rot umrandeten Karten!");
             if(confirm("Überarbeitung fertig? Als 'Turnierbereit' markieren.")) { meinD.status_phase = 'ready_final'; await updateDeckData(meinD); }
         }
     }
@@ -447,7 +439,7 @@
             if(dObj.status_phase === 'bau') { readyBtn.innerText = "Deckbau fertig ➡️ Weiter zu Schutz"; document.getElementById('search-panel').style.opacity = "1"; document.getElementById('search-panel').style.pointerEvents = "all"; }
             else if(dObj.status_phase === 'schutz') { readyBtn.innerText = "Schutz fertig ➡️ Für Banns freigeben 🔓"; document.getElementById('search-panel').style.opacity = "0.3"; document.getElementById('search-panel').style.pointerEvents = "none"; }
             else if(dObj.status_phase === 'ready') {
-                const req = (alleDecks.length - 1) * 2; const cur = dObj.karten_liste.filter(c => c.status === 'banned').length;
+                const req = (alleDecks.length - 1) * 2; const cur = (dObj.karten_liste || []).filter(c => c.status === 'banned').length;
                 readyBtn.innerText = "Bann-Phase beenden ➡️ Deck überarbeiten ✏️";
                 if(cur < req) { readyBtn.innerText = `Warte auf Gegner-Banns... (${cur}/${req}) ⏳`; readyBtn.className = "btn btn-ready is-disabled"; }
                 document.getElementById('search-panel').style.opacity = "0.3"; document.getElementById('search-panel').style.pointerEvents = "none";
@@ -470,7 +462,7 @@
             if (card.status === 'protected') pc += card.count; if (card.status === 'banned') bc += card.count;
 
             const li = document.createElement('li'); li.className = `deck-item ${card.status}`;
-            let banLabel = card.status === 'banned' ? `<span class="banned-by-label">❌ Gebannt von: ${card.bannedBy}</span>` : '';
+            let banLabel = card.status === 'banned' ? `<span class="banned-by-label">❌ Gebannt von: ${bannedByText(card)}</span>` : '';
             let showProtect = amITheOwner && dObj.status_phase === 'schutz';
             let showBan = !amITheOwner && dObj.status_phase === 'ready' && card.status !== 'protected';
             let showMinus = (amITheOwner && dObj.status_phase === 'bau') || (amITheOwner && dObj.status_phase === 'umbau');
@@ -500,20 +492,50 @@
         document.getElementById('protected-count').innerText = pc; document.getElementById('banned-count').innerText = bc;
     }
 
-    function addCardToSlot(cardId, slot) {
-        if(ausgewaehlterSpieler !== aktuellerSpieler) return; const meinD = getAusgewaehltesDeck();
-        if(meinD.status_phase !== 'bau' && meinD.status_phase !== 'umbau') return;
-        const cardData = currentSearchResults.find(c => c.id == cardId); if (!cardData) return;
-        let deck = meinD.karten_liste;
-        if (deck.filter(c => c.id == cardId).length >= 3) return alert("Max. 3 Kopien!");
-        deck.push({ id: cardData.id, name: cardData.name, type: cardData.type, atk: cardData.atk, def: cardData.def, level: cardData.level, race: cardData.race, desc: cardData.desc, card_images: cardData.card_images, instanceId: Date.now() + Math.random(), status: 'normal', deckType: slot, bannedBy: null, isNewErsatz: (meinD.status_phase === 'umbau') });
-        updateDeckData(meinD);
+    function bannedByText(card) {
+        return card.bannedBy || 'Unbekannt';
     }
 
-    function removeInstance(instanceId) { if(ausgewaehlterSpieler !== aktuellerSpieler) return; const meinD = getAusgewaehltesDeck(); meinD.karten_liste = meinD.karten_liste.filter(c => c.instanceId !== instanceId); updateDeckData(meinD); }
+    async function addCardToSlot(cardId, slot) {
+        if(ausgewaehlterSpieler !== aktuellerSpieler) return; 
+        
+        // Frischesten Zustand aus dem lokalen Speicher laden
+        const meinD = getAusgewaehltesDeck();
+        if(meinD.status_phase !== 'bau' && meinD.status_phase !== 'umbau') return;
+        
+        const cardData = currentSearchResults.find(c => c.id == cardId); 
+        if (!cardData) return;
+        
+        // Sicherstellen, dass die Liste existiert und als echtes Array manipuliert wird
+        if (!meinD.karten_liste) meinD.karten_liste = [];
+        let deck = [...meinD.karten_liste];
+        
+        if (deck.filter(c => c.id == cardId).length >= 3) return alert("Max. 3 Kopien!");
+        
+        deck.push({ 
+            id: cardData.id, name: cardData.name, type: cardData.type, atk: cardData.atk, def: cardData.def, level: cardData.level, race: cardData.race, desc: cardData.desc, card_images: cardData.card_images, 
+            instanceId: Date.now() + Math.random(), status: 'normal', deckType: slot, bannedBy: null, isNewErsatz: (meinD.status_phase === 'umbau') 
+        });
+        
+        meinD.karten_liste = deck;
+        await updateDeckData(meinD);
+        ladeAlleDecks(); // Sofortiger Cloud-Reload
+    }
+
+    async function removeInstance(instanceId) { 
+        if(ausgewaehlterSpieler !== aktuellerSpieler) return; 
+        const meinD = getAusgewaehltesDeck(); 
+        meinD.karten_liste = meinD.karten_liste.filter(c => c.instanceId !== instanceId); 
+        await updateDeckData(meinD);
+        ladeAlleDecks();
+    }
 
     async function toggleStatus(instanceId, targetStatus) {
-        let dObj = getAusgewaehltesDeck(); let deck = [...dObj.karten_liste]; const card = deck.find(c => c.instanceId === instanceId); if (!card) return;
+        let dObj = getAusgewaehltesDeck(); 
+        let deck = [...(dObj.karten_liste || [])]; 
+        const card = deck.find(c => c.instanceId === instanceId); 
+        if (!card) return;
+        
         const amITheOwner = (aktuellerSpieler === ausgewaehlterSpieler);
         if (targetStatus === 'protected' && amITheOwner && dObj.status_phase === 'schutz') {
             if (deck.filter(c => c.status === 'protected').length >= 3 && card.status !== 'protected') return alert("Max 3 geschützt!");
@@ -521,10 +543,19 @@
         } 
         if (targetStatus === 'banned' && !amITheOwner && dObj.status_phase === 'ready' && card.status !== 'protected') {
             const myBans = deck.filter(c => c.status === 'banned' && c.bannedBy === aktuellerSpieler).length;
-            if (card.status === 'banned') { if(card.bannedBy !== aktuellerSpieler) return; card.status = 'normal'; card.bannedBy = null; }
-            else { if (myBans >= 2) return alert("Max 2 Banns pro Gegner!"); card.status = 'banned'; card.bannedBy = aktuellerSpieler; }
+            if (card.status === 'banned') { 
+                if(card.bannedBy !== aktuellerSpieler) return; 
+                card.status = 'normal'; card.bannedBy = null; 
+            } else { 
+                if (myBans >= 2) return alert("Max 2 Banns pro Gegner!"); 
+                card.status = 'banned'; card.bannedBy = aktuellerSpieler; 
+            }
         }
+        
+        dObj.karten_liste = deck;
+        dObj.original_liste = deck;
         await db.from('decks').update({ karten_liste: deck, original_liste: deck }).eq('spieler_name', ausgewaehlterSpieler);
+        ladeAlleDecks();
     }
 
     searchInput.addEventListener('input', () => { clearTimeout(timeout); const q = searchInput.value.trim(); if (q.length < 3) return; timeout = setTimeout(() => fetchCardsDualLanguage(q), 300); });
