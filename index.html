@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yu-Gi-Ohnnerstag Todesturnier</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-color: #0a0a0f;
+            --panel-color: rgba(22, 22, 33, 0.75);
+            --text-color: #e2e8f0;
+            --accent-color: #9d4edd;
+            --accent-glow: #7b2cbf;
+            --protected-color: #ffb703;
+            --protected-glow: rgba(255, 183, 3, 0.4);
+            --banned-color: #ff0055;
+            --banned-glow: rgba(255, 0, 85, 0.4);
+            --ready-color: #00f5d4;
+            --ready-glow: rgba(0, 245, 212, 0.4);
+        }
+        
+        *, *::before, *::after { box-sizing: border-box; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+        
+        body { 
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; 
+            background-color: var(--bg-color); 
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(157, 78, 221, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(0, 245, 212, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-color); 
+            margin: 0; 
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        h1 { 
+            font-size: 2.8rem; 
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+            text-align: center;
+            background: linear-gradient(45deg, #fff, #9d4edd, #00f5d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 10px rgba(157, 78, 221, 0.3));
+            margin-bottom: 30px;
+            animation: floating 4s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        /* Glassmorphism Panels */
+        .panel-cell, .login-box, .dashboard-ticker {
+            background: var(--panel-color);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            padding: 25px;
+        }
+
+        .login-box { max-width: 450px; margin: 80px auto; text-align: center; border-top: 2px solid var(--accent-color); }
+        .login-box input { 
+            width: 100%; padding: 14px; margin: 12px 0; 
+            background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); 
+            color: #fff; border-radius: 8px; font-size: 16px;
+        }
+        .login-box input:focus { border-color: var(--accent-color); outline: none; box-shadow: 0 0 10px rgba(157, 78, 221, 0.3); }
+
+        .app-grid { display: none; animation: fadeIn 0.6s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .panel-table { display: table; width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 20px 0; }
+        .panel-cell { display: table-cell; vertical-align: top; }
+        
+        @media (max-width: 992px) {
+            .panel-table, .panel-cell { display: block; width: 100%; }
+            .panel-cell { margin-bottom: 20px; }
+        }
+
+        /* Ticker */
+        .dashboard-ticker { border-left: 4px solid var(--accent-color); margin-bottom: 25px; background: rgba(157, 78, 221, 0.03); }
+        .dashboard-ticker h3 { text-align: left; margin: 0 0 12px 0; font-size: 16px; letter-spacing: 1px; color: #fff; }
+        .ticker-list { max-height: 120px; overflow-y: auto; font-size: 14px; list-style: none; padding: 0; margin: 0; }
+        .ticker-list li { padding: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Inputs & Search */
+        .deckname-input-field { 
+            width: 100%; padding: 14px; background: rgba(0, 0, 0, 0.3); 
+            border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; border-radius: 10px; 
+            font-size: 20px; font-weight: bold; text-align: center; margin-bottom: 20px; letter-spacing: 1px;
+        }
+        .deckname-input-field:focus { border-color: var(--accent-color); outline: none; }
+        .deckname-input-field:disabled { background: transparent; border-color: transparent; color: var(--ready-color); }
+
+        input[type="text"]#search-input { 
+            width: 100%; padding: 14px; background-color: rgba(0, 0, 0, 0.4); 
+            border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; border-radius: 10px; font-size: 16px; 
+        }
+        input[type="text"]#search-input:focus { border-color: var(--accent-color); outline: none; box-shadow: 0 0 12px rgba(157, 78, 221, 0.2); }
+
+        .search-results { max-height: 480px; overflow-y: auto; margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 5px; }
+        .search-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); border-radius: 6px; }
+        .search-item:hover { background-color: rgba(255,255,255,0.03); transform: scale(1.01); }
+        
+        .card-info-trigger { cursor: pointer; font-weight: 600; color: #fff; }
+        .card-info-trigger:hover { color: var(--ready-color); text-shadow: 0 0 8px var(--ready-glow); }
+
+        /* Futuristic Buttons */
+        .btn { 
+            background: linear-gradient(135deg, var(--accent-color), #5a189a); 
+            color: white; border: none; padding: 8px 14px; margin-left: 4px; border-radius: 6px; 
+            cursor: pointer; font-weight: bold; font-size: 12px; letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(157, 78, 221, 0.2);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(157, 78, 221, 0.4); opacity: 0.95; }
+        .btn:active { transform: translateY(0); }
+        .btn-minus { background: rgba(255, 255, 255, 0.1); color: #fff; box-shadow: none; }
+        .btn-minus:hover { background: rgba(255, 255, 255, 0.2); box-shadow: none; }
+        .btn-protect { background: linear-gradient(135deg, var(--protected-color), #d48c00); box-shadow: 0 4px 12px rgba(255, 183, 3, 0.2); color: #000; }
+        .btn-protect:hover { box-shadow: 0 6px 16px var(--protected-glow); }
+        .btn-ban { background: linear-gradient(135deg, var(--banned-color), #bd003c); box-shadow: 0 4px 12px rgba(255, 0, 85, 0.2); }
+        .btn-ban:hover { box-shadow: 0 6px 16px var(--banned-glow); }
+        
+        .btn-ready { 
+            background: linear-gradient(135deg, var(--ready-color), #00bbf9); color: #0a0a0f; 
+            width: 100%; padding: 16px; font-size: 15px; margin-bottom: 20px; border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 245, 212, 0.2); letter-spacing: 1px;
+        }
+        .btn-ready:hover { box-shadow: 0 6px 24px var(--ready-glow); }
+        .btn-ready.is-disabled { background: #29293d; color: #5c5c7a; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* Liquid Counters & Badges */
+        .deck-counter { font-size: 14px; color: #a4a4b2; margin-bottom: 20px; text-align: center; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; line-height: 1.6; border: 1px solid rgba(255,255,255,0.02); }
+        .status-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; margin-top: 8px; letter-spacing: 1px; text-transform: uppercase; }
+        .status-badge.bau { background: rgba(255,255,255,0.08); color: #fff; }
+        .status-badge.schutz { background: rgba(255, 183, 3, 0.15); color: var(--protected-color); border: 1px solid var(--protected-color); }
+        .status-badge.bann { background: rgba(255, 0, 85, 0.15); color: var(--banned-color); border: 1px solid var(--banned-color); }
+        .status-badge.umbau { background: rgba(255, 118, 0, 0.15); color: #ff7600; border: 1px solid #ff7600; }
+        .status-badge.turnierbereit { background: rgba(0, 245, 212, 0.15); color: var(--ready-color); border: 1px solid var(--ready-color); box-shadow: 0 0 15px var(--ready-glow); }
+
+        /* Room Navigation Tabs */
+        .player-selector { background: rgba(0,0,0,0.3); padding: 8px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 8px; overflow-x: auto; border: 1px solid rgba(255,255,255,0.03); }
+        .player-tab { padding: 10px 18px; background: rgba(255,255,255,0.04); border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; white-space: nowrap; border: 1px solid transparent; }
+        .player-tab:hover { background: rgba(255,255,255,0.08); transform: translateY(-1px); }
+        .player-tab.active { background: rgba(157, 78, 221, 0.15); border-color: var(--accent-color); color: #fff; box-shadow: 0 0 12px rgba(157, 78, 221, 0.2); }
+
+        /* Liquid List Items */
+        .deck-list { list-style: none; padding: 0; margin: 0 0 25px 0; }
+        .deck-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; margin-bottom: 6px; background: rgba(0,0,0,0.2); border-radius: 8px; border-left: 3px solid rgba(255,255,255,0.1); }
+        .deck-item:hover { background: rgba(0,0,0,0.35); transform: translateX(2px); }
+        
+        /* Neon Glow Status-Borders */
+        .deck-item.protected { border-left-color: var(--protected-color); background: rgba(255, 183, 3, 0.03); box-shadow: inset 5px 0 10px rgba(255, 183, 3, 0.02); }
+        .deck-item.banned { border-left-color: var(--banned-color); background: rgba(255, 0, 85, 0.03); box-shadow: inset 5px 0 10px rgba(255, 0, 85, 0.02); }
+        .banned-by-label { display: block; font-size: 11px; color: var(--banned-color); font-weight: bold; margin-top: 3px; letter-spacing: 0.5px; }
+        .secret-card { font-style: italic; color: #5c5c7a; letter-spacing: 0.5px; }
+
+        /* Smooth Liquid Pop-up (Modal) */
+        .modal { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background-color: rgba(5, 5, 8, 0.85); backdrop-filter: blur(8px);
+            justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.4s ease;
+        }
+        .modal.show { opacity: 1; display: flex; }
+        
+        .modal-content { 
+            background-color: #161621; border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px; border-radius: 20px; max-width: 680px; width: 90%; display: flex; gap: 25px; position: relative;
+            transform: scale(0.85) translateY(20px); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+        .modal.show .modal-content { transform: scale(1) translateY(0); }
+        
+        .modal-img-container { width: 240px; flex-shrink: 0; }
+        .modal-img { max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        .modal-details { flex-grow: 1; }
+        
+        @media (max-width: 600px) { 
+            .modal-content { flex-direction: column; align-items: center; text-align: center; max-height: 90vh; overflow-y: auto; } 
+            .modal-img-container { width: 180px; } 
+        }
+        
+        .modal-close { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: #a4a4b2; }
+        .modal-close:hover { color: #fff; transform: scale(1.1); }
+        .card-stats { background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; margin: 15px 0; font-size: 14px; border: 1px solid rgba(255,255,255,0.03); line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Yu-Gi-Ohnnerstag Todesturnier</h1>
+
+    <!-- 1. ANMELDUNG -->
+    <div id="login-area" class="login-box">
+        <h2 style="margin-top:0; margin-bottom:20px; letter-spacing:1px;">Turnier-Beitritt</h2>
+        <input type="password" id="room-pass-input" placeholder="Turnier-Passwort...">
+        <input type="text" id="player-name-input" placeholder="Dein Spielername...">
+        <button class="btn" style="width:100%; padding:14px; margin-top:15px; font-size:14px;" onclick="initApp()">Arena betreten</button>
+    </div>
+    
+    <!-- 2. HAUPT-ANWENDUNG -->
+    <div id="app-area" class="app-grid">
+        
+        <!-- DASHBOARD TICKER -->
+        <div class="dashboard-ticker">
+            <h3>🛡️ Live Turnier-Ticker (Bann-Übersicht)</h3>
+            <ul id="ticker-list" class="ticker-list">
+                <li>Noch keine Aktivität im Raum.</li>
+            </ul>
+        </div>
+
+        <h3 style="text-align:left; margin-bottom:8px; font-size:16px; letter-spacing:0.5px;">Decks im Raum:</h3>
+        <div class="player-selector" id="player-selector"></div>
+
+        <div class="panel-table">
+            <!-- LINKER PANEL: SUCHE -->
+            <div class="panel-cell" id="search-panel">
+                <h2 style="text-align:left; font-size:20px; margin-top:0; margin-bottom:15px;">Karten suchen</h2>
+                <input type="text" id="search-input" placeholder="Tippe Name (DE / EN)...">
+                <div class="search-results" id="search-results"></div>
+            </div>
+
+            <!-- RECHTER PANEL: DECK-ANZEIGE -->
+            <div class="panel-cell">
+                <button id="ready-toggle-btn" class="btn btn-ready" onclick="handlePhaseTransition()">Deck fertigstellen 🔒</button>
+                
+                <input type="text" id="deck-name-field" class="deckname-input-field" placeholder="Name deines Decks eingeben..." onchange="updateDeckNameLive()">
+                
+                <h2 id="deck-view-title" style="margin-top:0; font-size:22px; text-align:left; display:none;">Dein Deck</h2>
+                
+                <div class="deck-counter">
+                    <strong>Main:</strong> <span id="main-count">0</span>/60 | 
+                    <strong>Extra:</strong> <span id="extra-count">0</span>/15 | 
+                    <strong>Side:</strong> <span id="side-count">0</span>/15<br>
+                    <small style="color:var(--protected-color);">Geschützt: <span id="protected-count">0</span>/3</small> |
+                    <small style="color:var(--banned-color);">Gebannt in diesem Deck: <span id="banned-count">0</span></small><br>
+                    <div id="deck-status-badge"></div>
+                </div>
+                
+                <h3 style="text-align:left; font-size:16px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:5px;">Main Deck</h3>
+                <ul id="main-deck-list" class="deck-list"></ul>
+
+                <h3 style="text-align:left; font-size:16px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:5px;">Extra Deck</h3>
+                <ul id="extra-deck-list" class="deck-list"></ul>
+
+                <h3 style="text-align:left; font-size:16px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:5px;">Side Deck</h3>
+                <ul id="side-deck-list" class="deck-list"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- POP-UP (MODAL) -->
+<div class="modal" id="card-modal">
+    <div class="modal-content">
+        <span class="modal-close" id="modal-close">&times;</span>
+        <div class="modal-img-container">
+            <img src="" alt="Kartenbild" class="modal-img" id="modal-img">
+        </div>
+        <div class="modal-details">
+            <h2 id="modal-title" style="text-align: left; margin-top: 0; color:#fff; font-size:22px;"></h2>
+            <div class="card-stats" id="modal-stats"></div>
+            <p id="modal-text" style="line-height: 1.6; font-size: 14px; margin: 0; color:#b4b4c6; max-height:200px; overflow-y:auto;"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = "https://bvrolbghfmkrjnhugahk.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_zOIy-V9JZyfTm2Y_iuFyug_Ws6F7lzG";
+    
+    // Direkt initialisieren
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let aktuellerSpieler = "";
+    let ausgewaehlterSpieler = "";
+    let alleDecks = []; 
+    let currentSearchResults = [];
+    let timeout = null;
+
+    const searchInput = document.getElementById('search-input');
+    const searchResults = document.getElementById('search-results');
+    const mainDeckList = document.getElementById('main-deck-list');
+    const extraDeckList = document.getElementById('extra-deck-list');
+    const sideDeckList = document.getElementById('side-deck-list');
+    const deckNameField = document.getElementById('deck-name-field');
+
+    async function initApp() {
+        const passInput = document.getElementById('room-pass-input').value.trim();
+        if(passInput !== "merzleckeier") {
+            return alert("Falsches Turnier-Passwort! Kein Zutritt zum Todesturnier.");
+        }
+
+        aktuellerSpieler = document.getElementById('player-name-input').value.trim();
+        if(!aktuellerSpieler) return alert("Bitte einen Spielernamen eingeben!");
+        
+        ausgewaehlterSpieler = aktuellerSpieler;
+        
+        const { data } = await supabase.from('decks').select('*').eq('spieler_name', aktuellerSpieler);
+        if(data.length === 0) {
+            await supabase.from('decks').insert([{ spieler_name: aktuellerSpieler, deck_name: "Unbenanntes Deck", karten_liste: [], original_liste: [], status_phase: 'bau' }]);
+        }
+        await ladeAlleDecks();
+        supabase.channel('schema-db-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'decks' }, () => { ladeAlleDecks(); }).subscribe();
+
+        document.getElementById('login-area').style.display = 'none';
+        document.getElementById('app-area').style.display = 'block';
+    }
+
+    async function ladeAlleDecks() {
+        const { data } = await supabase.from('decks').select('*');
+        alleDecks = data || [];
+        renderDashboardTicker();
+        renderSpielerTabs();
+        renderAktuellesDeck();
+    }
+
+    function renderDashboardTicker() {
+        const ticker = document.getElementById('ticker-list');
+        ticker.innerHTML = "";
+        let hatEintraege = false;
+
+        alleDecks.forEach(d => {
+            const listSource = (d.status_phase === 'umbau' || d.status_phase === 'ready_final') ? d.original_liste : d.karten_liste;
+            const banns = listSource.filter(c => c.status === 'banned');
+            
+            banns.forEach(b => {
+                hatEintraege = true;
+                const li = document.createElement('li');
+                li.innerHTML = `❌ <strong>${b.bannedBy}</strong> hat die Karte <strong>"${b.name}"</strong> im Deck von <strong>${d.spieler_name}</strong> gebannt!`;
+                ticker.appendChild(li);
+            });
+        });
+
+        if(!hatEintraege) {
+            ticker.innerHTML = "<li>Noch keine Aktivität. Die Phase des Planens läuft...</li>";
+        }
+    }
+
+    function renderSpielerTabs() {
+        const container = document.getElementById('player-selector');
+        container.innerHTML = "";
+        alleDecks.forEach(d => {
+            if (d.spieler_name !== aktuellerSpieler && d.status_phase === 'bau') return;
+            if (d.spieler_name !== aktuellerSpieler && d.status_phase === 'schutz') return;
+
+            const tab = document.createElement('div');
+            let isActive = d.spieler_name === ausgewaehlterSpieler;
+            tab.className = `player-tab ${isActive ? 'active' : ''}`;
+            
+            let icon = '🟡';
+            if(d.status_phase === 'schutz') icon = '🔵';
+            if(d.status_phase === 'ready') icon = '🔴';
+            if(d.status_phase === 'umbau') icon = '🟠';
+            if(d.status_phase === 'ready_final') icon = '🟢';
+
+            tab.innerText = `${d.spieler_name} ${icon}`;
+            tab.onclick = () => {
+                ausgewaehlterSpieler = d.spieler_name;
+                renderSpielerTabs();
+                renderAktuellesDeck();
+            };
+            container.appendChild(tab);
+        });
+    }
+
+    function getAusgewaehltesDeck() {
+        return alleDecks.find(d => d.spieler_name === ausgewaehlterSpieler) || { karten_liste: [], original_liste: [], status_phase: 'bau', deck_name: "Unbenanntes Deck" };
+    }
+
+    async function updateDeckNameLive() {
+        if(ausgewaehlterSpieler !== aktuellerSpieler) return;
+        const meinD = getAusgewaehltesDeck();
+        meinD.deck_name = deckNameField.value.trim() || "Unbenanntes Deck";
+        await updateDeckData(meinD);
+    }
+
+    async function handlePhaseTransition() {
+        if(ausgewaehlterSpieler !== aktuellerSpieler) return;
+        const meinD = getAusgewaehltesDeck();
+
+        if(meinD.status_phase === 'bau') {
+            const mainCount = meinD.karten_liste.filter(c => c.deckType === 'main').length;
+            if(mainCount < 40) return alert("Dein Main Deck muss mindestens 40 Karten enthalten!");
+            if(confirm("Deckbau abschließen? Als nächster Schritt folgt die Auswahl deiner 3 Schutz-Karten!")) {
+                meinD.status_phase = 'schutz';
+                await updateDeckData(meinD);
+            }
+        } 
+        else if(meinD.status_phase === 'schutz') {
+            const protectedCount = meinD.karten_liste.filter(c => c.status === 'protected').length;
+            if(protectedCount < 3 && meinD.karten_liste.length >= 3) {
+                if(!confirm(`Du hast erst ${protectedCount} von 3 Karten geschützt. Trotzdem fortfahren?`)) return;
+            }
+            if(confirm("Schutz-Phase beenden? Dein Deck wird jetzt für alle Gegner zum Bannen freigegeben!")) {
+                meinD.status_phase = 'ready';
+                meinD.original_liste = meinD.karten_liste;
+                await updateDeckData(meinD);
+            }
+        }
+        else if(meinD.status_phase === 'ready') {
+            const totalPlayers = alleDecks.length;
+            const benoetigteBanns = (totalPlayers - 1) * 2; 
+            const aktuelleBanns = meinD.karten_liste.filter(c => c.status === 'banned').length;
+
+            if(aktuelleBanns < benoetigteBanns) {
+                return alert(`Die Bann-Phase ist noch nicht vorbei! Es müssen insgesamt ${benoetigteBanns} Banns auf deinem Deck liegen (Aktuell: ${aktuelleBanns}/${benoetigteBanns}).`);
+            }
+            
+            if(confirm("Bann-Phase beenden? Du wechselst jetzt in die Anpassung, um die gesperrten Karten auszutauschen!")) {
+                meinD.status_phase = 'umbau';
+                meinD.original_liste = JSON.parse(JSON.stringify(meinD.karten_liste));
+                await updateDeckData(meinD);
+            }
+        }
+        else if(meinD.status_phase === 'umbau') {
+            const hatNochBanns = meinD.karten_liste.some(c => c.status === 'banned');
+            if(hatNochBanns) return alert("Du musst zuerst alle rot umrandeten, gebannten Karten aus deinem Deck entfernen und ersetzen!");
+            
+            if(confirm("Überarbeitung abschließen? Dein Deck wird final gespeichert und du wirst als 'Turnierbereit' markiert!")) {
+                meinD.status_phase = 'ready_final';
+                await updateDeckData(meinD);
+            }
+        }
+    }
+
+    async function updateDeckData(deckObj) {
+        await supabase.from('decks').update({ 
+            karten_liste: deckObj.karten_liste, 
+            original_liste: deckObj.original_liste, 
+            status_phase: deckObj.status_phase,
+            deck_name: deckObj.deck_name
+        }).eq('spieler_name', aktuellerSpieler);
+    }
+
+    function addCardToSlot(cardId, slot) {
+        if(ausgewaehlterSpieler !== aktuellerSpieler) return;
+        const meinD = getAusgewaehltesDeck();
+        if(meinD.status_phase !== 'bau' && meinD.status_phase !== 'umbau') return alert("In dieser Phase gesperrt!");
+
+        const cardData = currentSearchResults.find(c => c.id === cardId);
+        if (!cardData) return;
+
+        let deck = meinD.karten_liste;
+        if (deck.filter(c => c.id === cardId).length >= 3) return alert("Maximal 3 Kopien übergreifend erlaubt!");
+        if (slot === 'main' && deck.filter(c => c.deckType === 'main').length >= 60) return alert("Main Deck voll (max. 60)!");
+        if (slot === 'extra' && deck.filter(c => c.deckType === 'extra').length >= 15) return alert("Extra Deck voll (max. 15)!");
+        if (slot === 'side' && deck.filter(c => c.deckType === 'side').length >= 15) return alert("Side Deck voll (max. 15)!");
+
+        deck.push({
+            id: cardData.id, name: cardData.name, type: cardData.type, atk: cardData.atk, def: cardData.def,
+            level: cardData.level, linkval: cardData.linkval, scale: cardData.scale, race: cardData.race, desc: cardData.desc,
+            card_images: cardData.card_images,
+            instanceId: Date.now() + Math.random(),
+            status: 'normal', deckType: slot, bannedBy: null, isNewErsatz: (meinD.status_phase === 'umbau')
+        });
+
+        updateDeckData(meinD);
+    }
+
+    function removeInstance(instanceId) {
+        if(ausgewaehlterSpieler !== aktuellerSpieler) return;
+        const meinD = getAusgewaehltesDeck();
+        if(meinD.status_phase !== 'bau' && meinD.status_phase !== 'umbau') return alert("Nicht erlaubt!");
+        
+        meinD.karten_liste = meinD.karten_liste.filter(c => c.instanceId !== instanceId);
+        updateDeckData(meinD);
+    }
+
+    async function toggleStatus(instanceId, targetStatus) {
+        let dObj = getAusgewaehltesDeck();
+        let deck = [...dObj.karten_liste];
+        const card = deck.find(c => c.instanceId === instanceId);
+        if (!card) return;
+
+        const amITheOwner = (aktuellerSpieler === ausgewaehlterSpieler);
+
+        if (targetStatus === 'protected') {
+            if (!amITheOwner) return alert("Nur eigene Karten schützen!");
+            if (dObj.status_phase !== 'schutz') return alert("Nur in Schutz-Phase erlaubt!");
+            const count = deck.filter(c => c.status === 'protected').length;
+            if (count >= 3 && card.status !== 'protected') return alert("Maximal 3 Kopien schützen!");
+            card.status = card.status === 'protected' ? 'normal' : 'protected';
+        } 
+        
+        if (targetStatus === 'banned') {
+            if (amITheOwner) return alert("Du darfst dein eigenes Deck nicht bannen!");
+            if (dObj.status_phase !== 'ready') return alert("Nicht in der Bann-Phase!");
+            if (card.status === 'protected') return alert("Diese Karte ist geschützt!");
+            
+            const myBansOnThisDeck = deck.filter(c => c.status === 'banned' && c.bannedBy === aktuellerSpieler).length;
+            
+            if (card.status === 'banned') {
+                if(card.bannedBy !== aktuellerSpieler) return alert("Du kannst nur deine eigenen Banns aufheben!");
+                card.status = 'normal';
+                card.bannedBy = null;
+            } else {
+                if (myBansOnThisDeck >= 2) return alert("Du darfst maximal 2 Karten in diesem Deck bannen!");
+                card.status = 'banned';
+                card.bannedBy = aktuellerSpieler;
+            }
+        }
+
+        dObj.karten_liste = deck;
+        dObj.original_liste = deck;
+        
+        await supabase.from('decks').update({ karten_liste: deck, original_liste: deck }).eq('spieler_name', ausgewaehlterSpieler);
+    }
+
+    function renderAktuellesDeck() {
+        mainDeckList.innerHTML = ''; extraDeckList.innerHTML = ''; sideDeckList.innerHTML = '';
+        
+        const dObj = getAusgewaehltesDeck();
+        const amITheOwner = (aktuellerSpieler === ausgewaehlterSpieler);
+        
+        deckNameField.value = dObj.deck_name || "";
+        deckNameField.disabled = !amITheOwner || (dObj.status_phase !== 'bau' && dObj.status_phase !== 'umbau');
+
+        let deckAnzeigeQuellliste = [...(dObj.karten_liste || [])];
+        if(!amITheOwner && (dObj.status_phase === 'umbau' || dObj.status_phase === 'ready_final')) {
+            deckAnzeigeQuellliste = [...(dObj.original_liste || [])];
+        }
+
+        const readyBtn = document.getElementById('ready-toggle-btn');
+        if(amITheOwner) {
+            readyBtn.style.display = "block";
+            readyBtn.className = "btn btn-ready";
+            if(dObj.status_phase === 'bau') {
+                readyBtn.innerText = "Deckbau fertig ➡️ Weiter zu Schutz";
+                document.getElementById('search-panel').style.opacity = "1";
+                document.getElementById('search-panel').style.pointerEvents = "all";
+            } else if(dObj.status_phase === 'schutz') {
+                readyBtn.innerText = "Schutz fertig ➡️ Für Banns freigeben 🔓";
+                document.getElementById('search-panel').style.opacity = "0.3";
+                document.getElementById('search-panel').style.pointerEvents = "none";
+            } else if(dObj.status_phase === 'ready') {
+                const totalPlayers = alleDecks.length;
+                const benoetigteBanns = (totalPlayers - 1) * 2; 
+                const aktuelleBanns = dObj.karten_liste.filter(c => c.status === 'banned').length;
+                
+                readyBtn.innerText = "Bann-Phase beenden ➡️ Deck überarbeiten ✏️";
+                if(aktuelleBanns < benoetigteBanns) {
+                    readyBtn.innerText = `Warte auf Gegner-Banns... (${aktuelleBanns}/${benoetigteBanns}) ⏳`;
+                    readyBtn.className = "btn btn-ready is-disabled";
+                }
+                document.getElementById('search-panel').style.opacity = "0.3";
+                document.getElementById('search-panel').style.pointerEvents = "none";
+            } else if(dObj.status_phase === 'umbau') {
+                readyBtn.innerText = "Überarbeitung fertig ➡️ Turnierbereit erklären ⚔️";
+                document.getElementById('search-panel').style.opacity = "1";
+                document.getElementById('search-panel').style.pointerEvents = "all";
+            } else {
+                readyBtn.style.display = "none";
+                document.getElementById('search-panel').style.opacity = "0.3";
+                document.getElementById('search-panel').style.pointerEvents = "none";
+            }
+        } else {
+            readyBtn.style.display = "none";
+            document.getElementById('search-panel').style.opacity = "0.3";
+            document.getElementById('search-panel').style.pointerEvents = "none";
+        }
+
+        document.getElementById('deck-view-title').innerText = amITheOwner ? "Dein Deck" : `Deck von ${dObj.spieler_name}`;
+        
+        const badge = document.getElementById('deck-status-badge');
+        if(dObj.status_phase === 'bau') badge.innerHTML = '<span class="status-badge bau">1. Deckbau 🟡</span>';
+        if(dObj.status_phase === 'schutz') badge.innerHTML = '<span class="status-badge schutz">2. Eigener Schutz 🔵</span>';
+        if(dObj.status_phase === 'ready') badge.innerHTML = '<span class="status-badge bann">3. Bann-Phase 🔴</span>';
+        if(dObj.status_phase === 'umbau') badge.innerHTML = '<span class="status-badge umbau">4. Anpassung 🟠</span>';
+        if(dObj.status_phase === 'ready_final') badge.innerHTML = '<span class="status-badge turnierbereit">Turnierbereit ⚔️ 🟢</span>';
+
+        let mainCount = 0, extraCount = 0, sideCount = 0, protectedCount = 0, bannedCount = 0;
+
+        deckAnzeigeQuellliste.forEach(card => {
+            if (card.deckType === 'main') mainCount++;
+            else if (card.deckType === 'extra') extraCount++;
+            else if (card.deckType === 'side') sideCount++;
+
+            if (card.status === 'protected') protectedCount++;
+            if (card.status === 'banned') bannedCount++;
+
+            const li = document.createElement('li');
+            li.className = `deck-item ${card.status}`;
+            
+            let banLabel = card.status === 'banned' ? `<span class="banned-by-label">❌ Gebannt von: ${card.bannedBy}</span>` : '';
+
+            let showProtectBtn = amITheOwner && dObj.status_phase === 'schutz';
+            let showBanBtn = !amITheOwner && dObj.status_phase === 'ready' && card.status !== 'protected';
+            let showMinusBtn = (amITheOwner && dObj.status_phase === 'bau') || (amITheOwner && dObj.status_phase === 'umbau');
+
+            let istVersteckteGegnerKarte = !amITheOwner && card.isNewErsatz;
+
+            if(istVersteckteGegnerKarte) {
+                li.innerHTML = `
+                    <div class="deck-item-cell"><span class="secret-card">🕵️ [Geheime Ersatzkarte]</span></div>
+                    <div class="deck-item-buttons"></div>
+                `;
+            } else {
+                li.innerHTML = `
+                    <div class="deck-item-cell">
+                        <span class="card-info-trigger" onclick="openCardModalRaw(${JSON.stringify(card).replace(/"/g, '&quot;')})">${card.name}</span>
+                        ${banLabel}
+                    </div>
+                    <div class="deck-item-buttons">
+                        ${showProtectBtn ? `<button class="btn btn-protect" onclick="toggleStatus(${card.instanceId}, 'protected')">Schutz</button>` : ''}
+                        ${showBanBtn ? `<button class="btn btn-ban" onclick="toggleStatus(${card.instanceId}, 'banned')">${card.status === 'banned' ? 'Entbannen' : 'Bann (Max 2)'}</button>` : ''}
+                        ${showMinusBtn ? `<button class="btn btn-minus" onclick="removeInstance(${card.instanceId})">-</button>` : ''}
+                    </div>
+                `;
+            }
+            
+            if (card.deckType === 'main') mainDeckList.appendChild(li);
+            else if (card.deckType === 'extra') extraDeckList.appendChild(li);
+            else if (card.deckType === 'side') sideDeckList.appendChild(li);
+        });
+
+        if(!amITheOwner && (dObj.status_phase === 'umbau' || dObj.status_phase === 'ready_final')) {
+            const echteKartenListe = dObj.karten_liste || [];
+            document.getElementById('main-count').innerText = echteKartenListe.filter(c => c.deckType === 'main').length;
+            document.getElementById('extra-count').innerText = echteKartenListe.filter(c => c.deckType === 'extra').length;
+            document.getElementById('side-count').innerText = echteKartenListe.filter(c => c.deckType === 'side').length;
+        } else {
+            document.getElementById('main-count').innerText = mainCount;
+            document.getElementById('extra-count').innerText = extraCount;
+            document.getElementById('side-count').innerText = sideCount;
+        }
+        
+        document.getElementById('protected-count').innerText = protectedCount;
+        document.getElementById('banned-count').innerText = bannedCount;
+    }
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(timeout);
+        const query = searchInput.value.trim();
+        if (query.length < 3) { searchResults.innerHTML = ''; return; }
+        timeout = setTimeout(() => fetchCardsDualLanguage(query), 300);
+    });
+
+    async function fetchCardsDualLanguage(query) {
+        const urlDE = `https://db.ygoprodeck.com/api/v7/cardinfo.php?fname=${encodeURIComponent(query)}&language=de`;
+        const urlEN = `https://db.ygoprodeck.com/api/v7/cardinfo.php?fname=${encodeURIComponent(query)}`;
+        try {
+            const [resDE, resEN] = await Promise.all([
+                fetch(urlDE).then(res => res.ok ? res.json() : { data: [] }),
+                fetch(urlEN).then(res => res.ok ? res.json() : { data: [] })
+            ]);
+            const combined = [...(resDE.data || []), ...(resEN.data || [])];
+            const uniqueCards = []; const seenIds = new Set();
+            combined.forEach(card => { if (!seenIds.has(card.id)) { seenIds.add(card.id); uniqueCards.push(card); } });
+            currentSearchResults = uniqueCards.slice(0, 30);
+            renderSearchResults();
+        } catch (e) { searchResults.innerHTML = '<div style="padding:10px; color:#ff4444;">Nichts gefunden.</div>'; }
+    }
+
+    function renderSearchResults() {
+        searchResults.innerHTML = '';
+        currentSearchResults.forEach(card => {
+            const extraTypes = ['Fusion Monster', 'Synchro Monster', 'XYZ Monster', 'Link Monster'];
+            const isExtra = extraTypes.some(t => card.type.includes(t));
+            const item = document.createElement('div');
+            item.className = 'search-item';
+            item.innerHTML = `
+                <div class="search-item-cell"><span class="card-info-trigger" onclick="openCardModal(${card.id})">${card.name}</span></div>
+                <div class="search-item-buttons">
+                    ${isExtra ? `<button class="btn" onclick="addCardToSlot(${card.id}, 'extra')">+ Extra</button>` : `<button class="btn" onclick="addCardToSlot(${card.id}, 'main')">+ Main</button>`}
+                    <button class="btn btn-minus" onclick="addCardToSlot(${card.id}, 'side')">+ Side</button>
+                </div>
+            `;
+            searchResults.appendChild(item);
+        });
+    }
+
+    const modal = document.getElementById('card-modal');
+    const modalClose = document.getElementById('modal-close');
+
+    function openCardModal(cardId) { const card = currentSearchResults.find(c => c.id === cardId); if(card) fillAndShowModal(card); }
+    function openCardModalRaw(card) { fillAndShowModal(card); }
+
+    function fillAndShowModal(card) {
+        document.getElementById('modal-title').innerText = card.name;
+        document.getElementById('modal-img').src = card.card_images[0].image_url;
+        let statsHTML = `<strong>Typ:</strong> ${card.type} | <strong>Rasse:</strong> ${card.race}`;
+        if (card.atk !== undefined) statsHTML += `<br><strong>ATK:</strong> ${card.atk} | <strong>DEF:</strong> ${card.def || 0}`;
+        if (card.level || card.rating) statsHTML += `<br><strong>Level/Rang/Link:</strong> ${card.level || card.linkval || '-'}`;
+        if (card.scale) statsHTML += ` | <strong>Pendelskala:</strong> ${card.scale}`;
+        document.getElementById('modal-stats').innerHTML = statsHTML;
+        document.getElementById('modal-text').innerText = card.desc;
+        
+        modal.classList.add('show');
+    }
+
+    modalClose.addEventListener('click', () => modal.classList.remove('show'));
+    window.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
+</script>
+</body>
+</html>
