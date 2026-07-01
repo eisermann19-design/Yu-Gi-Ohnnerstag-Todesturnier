@@ -275,11 +275,12 @@
 </div>
 
 <script>
+    // !!! HIER SIND DEINE KORREKTEN KEYS HINTERLEGT !!!
     const SUPABASE_URL = "https://bvrolbghfmkrjnhugahk.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_zOIy-V9JZyfTm2Y_iuFyug_Ws6F7lzG";
     
-    // Direkt initialisieren
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Korrigiert: Die Variable heißt jetzt 'db', um den Absturz-Konflikt zu lösen!
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let aktuellerSpieler = "";
     let ausgewaehlterSpieler = "";
@@ -305,19 +306,20 @@
         
         ausgewaehlterSpieler = aktuellerSpieler;
         
-        const { data } = await supabase.from('decks').select('*').eq('spieler_name', aktuellerSpieler);
-        if(data.length === 0) {
-            await supabase.from('decks').insert([{ spieler_name: aktuellerSpieler, deck_name: "Unbenanntes Deck", karten_liste: [], original_liste: [], status_phase: 'bau' }]);
+        // Nutzt jetzt die saubere 'db' Instanz
+        const { data } = await db.from('decks').select('*').eq('spieler_name', aktuellerSpieler);
+        if(!data || data.length === 0) {
+            await db.from('decks').insert([{ spieler_name: aktuellerSpieler, deck_name: "Unbenanntes Deck", karten_liste: [], original_liste: [], status_phase: 'bau' }]);
         }
         await ladeAlleDecks();
-        supabase.channel('schema-db-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'decks' }, () => { ladeAlleDecks(); }).subscribe();
+        db.channel('schema-db-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'decks' }, () => { ladeAlleDecks(); }).subscribe();
 
         document.getElementById('login-area').style.display = 'none';
         document.getElementById('app-area').style.display = 'block';
     }
 
     async function ladeAlleDecks() {
-        const { data } = await supabase.from('decks').select('*');
+        const { data } = await db.from('decks').select('*');
         alleDecks = data || [];
         renderDashboardTicker();
         renderSpielerTabs();
@@ -434,7 +436,7 @@
     }
 
     async function updateDeckData(deckObj) {
-        await supabase.from('decks').update({ 
+        await db.from('decks').update({ 
             karten_liste: deckObj.karten_liste, 
             original_liste: deckObj.original_liste, 
             status_phase: deckObj.status_phase,
@@ -513,7 +515,7 @@
         dObj.karten_liste = deck;
         dObj.original_liste = deck;
         
-        await supabase.from('decks').update({ karten_liste: deck, original_liste: deck }).eq('spieler_name', ausgewaehlterSpieler);
+        await db.from('decks').update({ karten_liste: deck, original_liste: deck }).eq('spieler_name', ausgewaehlterSpieler);
     }
 
     function renderAktuellesDeck() {
